@@ -3,11 +3,11 @@ from multiprocessing.pool import ThreadPool as Pool
 import os
 import wave
 
-from gentle import standard_kaldi
-from gentle import metasentence
-from gentle import language_model
-from gentle import diff_align
-from gentle import transcription
+from . import standard_kaldi
+from . import metasentence
+from . import language_model
+from . import diff_align
+from . import transcription
 
 def prepare_multipass(alignment):
     to_realign = []

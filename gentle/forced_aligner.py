@@ -1,10 +1,10 @@
-from gentle import diff_align
-from gentle import kaldi_queue
-from gentle import language_model
-from gentle import metasentence
-from gentle import multipass
-from gentle.transcriber import MultiThreadedTranscriber
-from gentle.transcription import Transcription
+from . import diff_align
+from . import kaldi_queue
+from . import language_model
+from . import metasentence
+from . import multipass
+from .transcriber import MultiThreadedTranscriber
+from .transcription import Transcription
 
 class ForcedAligner():
 

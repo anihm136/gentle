@@ -1,5 +1,5 @@
 from queue import Queue
-from gentle import standard_kaldi
+from . import standard_kaldi
 
 def build(resources, nthreads=4, hclg_path=None):
 

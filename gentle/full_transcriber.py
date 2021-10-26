@@ -1,9 +1,9 @@
 import os
 
-from gentle import kaldi_queue
-from gentle import transcription
-from gentle.transcriber import MultiThreadedTranscriber
-from gentle.transcription import Transcription
+from . import kaldi_queue
+from . import transcription
+from .transcriber import MultiThreadedTranscriber
+from .transcription import Transcription
 
 class FullTranscriber():
 

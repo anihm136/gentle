@@ -2,7 +2,7 @@ import math
 import logging
 import wave
 
-from gentle import transcription
+from . import transcription
 
 from multiprocessing.pool import ThreadPool as Pool
 

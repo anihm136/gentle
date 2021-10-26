@@ -3,11 +3,11 @@ import json
 import os
 import sys
 
-from gentle import metasentence
-from gentle import language_model
-from gentle import standard_kaldi
-from gentle import transcription
-from gentle.resources import Resources
+from . import metasentence
+from . import language_model
+from . import standard_kaldi
+from . import transcription
+from .resources import Resources
 
 
 # TODO(maxhawkins): try using the (apparently-superior) time-mediated dynamic
