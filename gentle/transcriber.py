@@ -15,20 +15,25 @@ class MultiThreadedTranscriber:
         self.kaldi_queue = kaldi_queue
 
     def transcribe(self, wavfile, progress_cb=None):
+        logging.debug("Opening wav file")
         wav_obj = wave.open(wavfile, 'rb')
         duration = wav_obj.getnframes() / float(wav_obj.getframerate())
         n_chunks = int(math.ceil(duration / float(self.chunk_len - self.overlap_t)))
+        logging.debug("Closing wav file")
+        wav_obj.close()
 
         chunks = []
 
-
         def transcribe_chunk(idx):
+            logging.debug("Opening wav file")
             wav_obj = wave.open(wavfile, 'rb')
             start_t = idx * (self.chunk_len - self.overlap_t)
             # Seek
             wav_obj.setpos(int(start_t * wav_obj.getframerate()))
             # Read frames
             buf = wav_obj.readframes(int(self.chunk_len * wav_obj.getframerate()))
+            logging.debug("Closing wav file")
+            wav_obj.close()
 
             if len(buf) < 4000:
                 logging.info('Short segment - ignored %d' % (idx))

@@ -20,6 +20,7 @@ class ForcedAligner():
         self.mtt = MultiThreadedTranscriber(self.queue, nthreads=nthreads)
 
     def transcribe(self, wavfile, progress_cb=None, logging=None):
+        logging.debug("Starting transcription")
         words, duration = self.mtt.transcribe(wavfile, progress_cb=progress_cb)
 
         # Clear queue (would this be gc'ed?)
@@ -28,6 +29,7 @@ class ForcedAligner():
             k.stop()
 
         # Align words
+        logging.debug("Starting alignment")
         words = diff_align.align(words, self.ms, **self.kwargs)
 
         # Perform a second-pass with unaligned words
@@ -37,6 +39,7 @@ class ForcedAligner():
         if progress_cb is not None:
             progress_cb({'status': 'ALIGNING'})
 
+        logging.debug("Starting second pass")
         words = multipass.realign(wavfile, words, self.ms, resources=self.resources, nthreads=self.nthreads, progress_cb=progress_cb)
 
         if logging is not None:

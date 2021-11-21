@@ -8,6 +8,7 @@ from . import language_model
 from . import standard_kaldi
 from . import transcription
 from .resources import Resources
+import logging
 
 
 # TODO(maxhawkins): try using the (apparently-superior) time-mediated dynamic
@@ -21,6 +22,7 @@ def align(alignment, ms, **kwargs):
     correctly-aligned words as well as words that Kaldi failed to recognize
     and extra words not found in the original transcript.
     '''
+    logging.debug("Starting diff alignment")
     disfluency = kwargs['disfluency'] if 'disfluency' in kwargs else False
     disfluencies = kwargs['disfluencies'] if 'disfluencies' in kwargs else []
 
@@ -32,7 +34,7 @@ def align(alignment, ms, **kwargs):
 
     out = []
     for op, a, b in word_diff(hypothesis, reference):
-
+        # logging.debug("Computing diff for", op, a, b)
         if op == 'delete':
             word = hypothesis[a]
             if disfluency and word in disfluencies:

@@ -10,6 +10,7 @@ from . import diff_align
 from . import transcription
 
 def prepare_multipass(alignment):
+    logging.debug("Preparing alignment for second pass")
     to_realign = []
     last_aligned_word = None
     cur_unaligned_words = []
@@ -36,10 +37,12 @@ def prepare_multipass(alignment):
     return to_realign
     
 def realign(wavfile, alignment, ms, resources, nthreads=4, progress_cb=None):
+    logging.debug("Realigning")
     to_realign = prepare_multipass(alignment)
     realignments = []
 
     def realign(chunk):
+        logging.debug("Opening wav file")
         wav_obj = wave.open(wavfile, 'rb')
 
         if chunk["start"] is None:
@@ -56,29 +59,39 @@ def realign(wavfile, alignment, ms, resources, nthreads=4, progress_cb=None):
         # XXX: the minimum length seems bigger now (?)
         if duration < 0.75 or duration > 60:
             logging.debug("cannot realign %d words with duration %f" % (len(chunk['words']), duration))
+            logging.debug("Closing wav file, returning early")
+            wav_obj.close()
             return
 
+        logging.debug("Aligning chunk")
         # Create a language model
         offset_offset = chunk['words'][0].startOffset
         chunk_len = chunk['words'][-1].endOffset - offset_offset
         chunk_transcript = ms.raw_sentence[offset_offset:offset_offset+chunk_len].encode("utf-8")
         chunk_ms = metasentence.MetaSentence(chunk_transcript, resources.vocab)
         chunk_ks = chunk_ms.get_kaldi_sequence()
+        logging.debug("Done aligning")
 
+        logging.debug("Creating language model")
         chunk_gen_hclg_filename = language_model.make_bigram_language_model(chunk_ks, resources.proto_langdir)
         k = standard_kaldi.Kaldi(
             resources.nnet_gpu_path,
             chunk_gen_hclg_filename,
             resources.proto_langdir)
 
-        wav_obj = wave.open(wavfile, 'rb')
+        # logging.debug("Opening wav file for alignment")
+        # wav_obj = wave.open(wavfile, 'rb')
+        logging.debug("Reading wavfile into buffer")
         wav_obj.setpos(int(start_t * wav_obj.getframerate()))
         buf = wav_obj.readframes(int(duration * wav_obj.getframerate()))
+        wav_obj.close()
+        logging.debug("Closing wav file after reading buffer")
 
         k.push_chunk(buf)
         ret = [transcription.Word(**wd) for wd in k.get_final()]
-        k.stop()
+        # k.stop()
 
+        logging.debug("Aligning word")
         word_alignment = diff_align.align(ret, chunk_ms)
 
         for wd in word_alignment:
@@ -89,6 +102,7 @@ def realign(wavfile, alignment, ms, resources, nthreads=4, progress_cb=None):
 
         if progress_cb is not None:
             progress_cb({"percent": len(realignments) / float(len(to_realign))})
+        logging.debug("Finished aligning chunk")
 
     pool = Pool(nthreads)
     pool.map(realign, to_realign)
